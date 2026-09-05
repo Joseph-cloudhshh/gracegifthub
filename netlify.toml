@@ -1,10 +1,12 @@
 [build]
   base = "frontend"
   publish = "."
-  functions = "../netlify/functions"
 
 [build.environment]
   PYTHON_VERSION = "3.11"
+
+[functions]
+  directory = "../netlify/functions"
 
 # Route these exact path patterns straight to the "api" Python function,
 # preserving the original path (Flask's blueprints already expect the
