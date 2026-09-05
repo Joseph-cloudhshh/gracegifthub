@@ -1,0 +1,8 @@
+backend/.env
+backend/venv/
+backend/__pycache__/
+netlify/functions/api/__pycache__/
+*.pyc
+*.db
+.netlify/
+node_modules/

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — Gracegifthub</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="brand">🎁 Gracegifthub</a>
+</header>
+
+<section class="auth-wrap">
+  <div class="auth-card">
+    <h2>Create your account</h2>
+    <p class="muted">Send love, we deliver</p>
+    <form id="signupForm">
+      <label>Full name</label>
+      <input type="text" id="fullName" required>
+      <label>Email</label>
+      <input type="email" id="email" required>
+      <label>Phone</label>
+      <input type="tel" id="phone">
+      <label>Password</label>
+      <input type="password" id="password" required minlength="6">
+      <p id="signupError" class="form-error hidden"></p>
+      <button type="submit" class="btn-primary">Create Account</button>
+    </form>
+    <p class="muted">Already have an account? <a href="login.html">Log in</a></p>
+  </div>
+</section>
+
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

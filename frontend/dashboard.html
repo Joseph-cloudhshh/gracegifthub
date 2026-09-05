@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Gracegifthub</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dash-body">
+
+<div class="dash-layout">
+
+  <header class="dash-appbar">
+    <div class="appbar-left">
+      <button id="mobileMenuBtn" class="mobile-menu-btn" aria-label="Open menu">☰</button>
+      <button id="dashBackBtn" class="mobile-menu-btn hidden" aria-label="Back">←</button>
+    </div>
+    <div class="brand appbar-brand">🎁 Gracegifthub</div>
+    <button id="cartQuickBtn" class="appbar-cart-btn" data-tab="cart" aria-label="Cart">
+      🛍️<span id="cartBadge" class="cart-badge hidden">0</span>
+    </button>
+  </header>
+
+  <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+
+  <aside class="sidebar" id="sidebarNav">
+    <div class="sidebar-top">
+      <div class="brand sidebar-brand">🎁 Gracegifthub</div>
+      <button id="closeMenuBtn" class="mobile-menu-btn close-menu-btn" aria-label="Close menu">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="active" data-tab="overview"><span class="nav-ic">🏠</span> Home</a>
+      <a href="#" data-tab="shop"><span class="nav-ic">🎁</span> Shop Gifts</a>
+      <a href="#" data-tab="wallet"><span class="nav-ic">👛</span> Wallet</a>
+      <a href="#" data-tab="support"><span class="nav-ic">💬</span> Support</a>
+      <a href="#" data-tab="cart"><span class="nav-ic">🛍️</span> Cart</a>
+    </nav>
+
+    <button id="supportAiBtn" class="sidebar-ai-btn" aria-haspopup="dialog">
+      <span class="nav-ic">🤖</span> Chat with Support AI
+    </button>
+    <button id="logoutBtn" class="sidebar-logout">Log out</button>
+  </aside>
+
+  <main class="dash-main">
+
+    <!-- ===== HOME ===== -->
+    <section id="tab-overview" class="dash-tab">
+      <div class="home-header">
+        <div>
+          <div class="eyebrow-pink">Your account</div>
+          <h2 id="greeting">Welcome back! 👋</h2>
+          <p class="muted">Everything you need to send and track thoughtful gifts.</p>
+        </div>
+        <a href="#" data-tab="shop" class="btn-pill">🎁 Shop gifts</a>
+      </div>
+
+      <div class="stat-cards">
+        <button class="stat-card" data-tab="orders">
+          <div class="stat-icon icon-purple">📦</div>
+          <div class="stat-value" id="statOrders">0</div>
+          <div class="stat-label">Total orders</div>
+        </button>
+        <button class="stat-card" data-tab="orders">
+          <div class="stat-icon icon-pink">💳</div>
+          <div class="stat-value" id="statSpent">₦0</div>
+          <div class="stat-label">Total spent</div>
+        </button>
+        <button class="stat-card" data-tab="cashback">
+          <div class="stat-icon icon-orange">🎗️</div>
+          <div class="stat-value" id="statCashback">₦0</div>
+          <div class="stat-label">Cashback balance</div>
+        </button>
+      </div>
+
+      <h3 class="section-title">Quick links</h3>
+      <div class="quick-links">
+        <button class="quick-link" data-tab="orders">
+          <div class="ql-icon icon-purple">📋</div>
+          <div>
+            <strong>My Orders</strong>
+            <span>View your order history</span>
+          </div>
+        </button>
+        <button class="quick-link" data-tab="addresses">
+          <div class="ql-icon icon-teal">📍</div>
+          <div>
+            <strong>My Addresses</strong>
+            <span>Manage delivery addresses</span>
+          </div>
+        </button>
+        <button class="quick-link" data-tab="profile">
+          <div class="ql-icon icon-orange">👤</div>
+          <div>
+            <strong>Profile</strong>
+            <span>Update your account details</span>
+          </div>
+        </button>
+        <button class="quick-link" data-tab="wallet">
+          <div class="ql-icon icon-pink">👛</div>
+          <div>
+            <strong>Wallet</strong>
+            <span>Fund and pay with your balance</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="section-header-row">
+        <h3 class="section-title">Recent orders</h3>
+        <a href="#" data-tab="orders" class="link-arrow">View all orders →</a>
+      </div>
+      <div id="recentOrders" class="order-list"></div>
+    </section>
+
+    <!-- ===== SHOP ===== -->
+    <section id="tab-shop" class="dash-tab hidden">
+      <h2>Shop Gifts</h2>
+      <p class="muted">Flowers, cakes, teddy bears, frames, jewelry and more.</p>
+
+      <div class="shop-search-row">
+        <input type="search" id="shopSearchInput" placeholder="Search products, e.g. teddy, watch, Coca-Cola…" autocomplete="off">
+        <button type="button" id="shopSearchClear" class="btn-outline small hidden">Clear</button>
+      </div>
+
+      <div id="categoryChips" class="category-chips"></div>
+
+      <div id="productGrid" class="shop-results">
+        <p class="muted">Loading gifts…</p>
+      </div>
+    </section>
+
+    <!-- ===== WALLET ===== -->
+    <section id="tab-wallet" class="dash-tab hidden">
+      <h2>My Wallet</h2>
+      <div class="cashback-hero">
+        <div class="cashback-hero-label">Wallet balance</div>
+        <div class="cashback-hero-value" id="walletBalanceValue">₦0</div>
+        <p class="muted">Fund your wallet and pay for orders instantly at checkout — no card details needed each time.</p>
+      </div>
+
+      <form id="fundWalletForm" class="checkout-form">
+        <h3>Fund wallet</h3>
+        <label>Amount (₦)</label>
+        <input type="number" id="fundAmount" min="100" step="100" placeholder="e.g. 5000" required>
+        <button type="submit" class="btn-primary">Fund wallet</button>
+      </form>
+
+      <h3 class="section-title">Recent wallet transactions</h3>
+      <div id="walletTransactions" class="order-list"></div>
+    </section>
+
+    <!-- ===== ORDERS ===== -->
+    <section id="tab-orders" class="dash-tab hidden">
+      <h2>Order History</h2>
+      <div id="allOrders" class="order-list"></div>
+    </section>
+
+    <!-- ===== CART ===== -->
+    <section id="tab-cart" class="dash-tab hidden">
+      <div class="section-header-row">
+        <h2>My Cart</h2>
+        <a href="#" data-tab="shop" class="link-arrow">← Continue shopping</a>
+      </div>
+      <div id="cartItems" class="cart-list"></div>
+      <div id="cartSummaryWrap" class="cart-summary hidden">
+        <div><span>Subtotal</span><span id="cartSubtotal">₦0</span></div>
+        <div><span>Delivery fee</span><span id="cartDelivery">₦5,000</span></div>
+        <div id="cashbackRow" class="cashback-row hidden">
+          <label>
+            <input type="checkbox" id="useCashback">
+            Use cashback balance (<span id="cashbackAvailable">₦0</span> available)
+          </label>
+        </div>
+        <div class="total"><span>Total</span><span id="cartTotal">₦0</span></div>
+      </div>
+
+      <form id="checkoutForm" class="checkout-form hidden">
+        <h3>Who is receiving the gift?</h3>
+        <label>Recipient Name</label>
+        <input type="text" id="recipientName" required>
+        <label>Phone Number</label>
+        <input type="tel" id="recipientPhone" required>
+        <label>Recipient Email</label>
+        <input type="email" id="recipientEmail" placeholder="name@example.com" required>
+        <label>Delivery Country</label>
+        <select id="deliveryCountry" required></select>
+        <label>Delivery Address</label>
+        <input type="text" id="deliveryAddress" placeholder="Street, city, postal code" required>
+        <label>Gift Message (optional)</label>
+        <textarea id="giftMessage"></textarea>
+
+        <h3>Payment method</h3>
+        <div class="payment-method-options">
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="wallet" id="payMethodWallet">
+            <span>👛 Pay with Wallet — <span id="payMethodWalletBalance">₦0</span> available</span>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="gateway" id="payMethodGateway" checked>
+            <span>💳 Pay with Bank / Payment Gateway</span>
+          </label>
+        </div>
+        <p id="walletInsufficientNote" class="muted small-note hidden">
+          Insufficient wallet balance for this order. <a href="#" data-tab="wallet">Fund your wallet</a> or pay with the gateway instead.
+        </p>
+
+        <button type="submit" class="btn-primary">Proceed to Payment</button>
+      </form>
+    </section>
+
+    <!-- ===== ADDRESSES ===== -->
+    <section id="tab-addresses" class="dash-tab hidden">
+      <h2>My Addresses</h2>
+      <p class="muted">Pick a country to add or edit the address we deliver to there.</p>
+
+      <div class="country-grid" id="countryGrid"></div>
+
+      <div id="addressFormWrap" class="address-form-wrap hidden">
+        <h3 id="addressFormTitle">Add address</h3>
+        <form id="addressForm" class="checkout-form">
+          <label>Full Name</label>
+          <input type="text" id="addrFullName" required>
+          <label>Phone Number</label>
+          <input type="tel" id="addrPhone" required>
+          <label>Street Address</label>
+          <input type="text" id="addrStreet" required>
+          <label>City</label>
+          <input type="text" id="addrCity" required>
+          <label>State / Region</label>
+          <input type="text" id="addrState">
+          <label>Postal Code</label>
+          <input type="text" id="addrPostal">
+          <div class="address-form-actions">
+            <button type="submit" class="btn-primary">Save address</button>
+            <button type="button" id="deleteAddressBtn" class="btn-outline hidden">Delete</button>
+          </div>
+        </form>
+      </div>
+
+      <h3 class="section-title">Saved addresses</h3>
+      <div id="savedAddressList" class="order-list"></div>
+    </section>
+
+    <!-- ===== PROFILE ===== -->
+    <section id="tab-profile" class="dash-tab hidden">
+      <h2>Profile</h2>
+      <p class="muted">Your account details.</p>
+      <form id="profileForm" class="checkout-form profile-form">
+        <label>Full Name</label>
+        <input type="text" id="profileFullName">
+        <label>Email</label>
+        <input type="email" id="profileEmail" disabled>
+        <label>Phone Number</label>
+        <input type="tel" id="profilePhone">
+        <button type="submit" class="btn-primary">Save changes</button>
+        <p class="muted small-note">Profile changes are saved on this device. Email can't be changed here — contact support if you need to update it.</p>
+      </form>
+    </section>
+
+    <!-- ===== CASHBACK ===== -->
+    <section id="tab-cashback" class="dash-tab hidden">
+      <h2>Cashback Balance</h2>
+      <div class="cashback-hero">
+        <div class="cashback-hero-label">Available balance</div>
+        <div class="cashback-hero-value" id="cashbackHeroValue">₦0</div>
+        <p class="muted">You earn 2% cashback on every completed order. Use it to reduce your next total at checkout.</p>
+        <a href="#" data-tab="shop" class="btn-pill">🎁 Shop gifts</a>
+      </div>
+    </section>
+
+    <!-- ===== SUPPORT ===== -->
+    <section id="tab-support" class="dash-tab hidden">
+      <h2>Support</h2>
+      <p class="muted">We're here to help with anything gift-related.</p>
+      <div class="support-list">
+        <a href="#" data-contact-email-href class="support-item">
+          <div class="ql-icon icon-purple">✉️</div>
+          <div><strong>Email us</strong><span data-contact-email-text>supportgracegifthub@gmail.com</span></div>
+        </a>
+        <a href="#" data-contact-phone-href class="support-item">
+          <div class="ql-icon icon-teal">📞</div>
+          <div><strong>Call us</strong><span data-contact-phone-text>+234 708 837 6847</span></div>
+        </a>
+        <a href="#" target="_blank" rel="noopener" data-contact-whatsapp class="support-item">
+          <div class="ql-icon icon-orange">💬</div>
+          <div><strong>WhatsApp</strong><span>Chat with us instantly</span></div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== Support AI chat widget ===== -->
+<div id="aiOverlay" class="sidebar-overlay hidden"></div>
+<div id="aiPanel" class="ai-panel hidden" role="dialog" aria-label="Support AI chat">
+  <div class="ai-panel-header">
+    <div><span class="nav-ic">🤖</span> Support AI</div>
+    <button id="aiCloseBtn" class="mobile-menu-btn close-menu-btn" aria-label="Close chat">✕</button>
+  </div>
+  <div id="aiMessages" class="ai-messages"></div>
+  <div id="aiSuggestions" class="ai-suggestions"></div>
+  <form id="aiForm" class="ai-input-row">
+    <input id="aiInput" type="text" placeholder="Ask something…" autocomplete="off">
+    <button type="submit" class="btn-pill">Send</button>
+  </form>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/support-ai.js"></script>
+</body>
+</html>

@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard — Gracegifthub Gift Hub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/admin-fetch-patch.js"></script>
+<style>
+/* ─── Reset & Base ─── */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f2f5;color:#1f2937;min-height:100vh;display:flex}
+
+/* ─── Sidebar ─── */
+.sidebar{width:240px;min-width:240px;background:#0f2847;color:#cbd5e1;display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:1000;transition:transform .3s}
+.sidebar-logo{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.sidebar-logo .icon{background:linear-gradient(135deg,#2563eb,#1d4ed8);width:38px;height:38px;
+  border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-logo .icon i{color:#fff;font-size:17px}
+.sidebar-logo .text h2{font-size:.93rem;font-weight:700;color:#fff;line-height:1.2}
+.sidebar-logo .text p{font-size:.68rem;color:#94a3b8;margin-top:1px}
+
+.admin-profile{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.admin-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+.admin-profile .info h4{font-size:.83rem;font-weight:600;color:#e2e8f0}
+.admin-profile .info p{font-size:.7rem;color:#64748b}
+.online-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;border:2px solid #0f2847;
+  position:absolute;bottom:0;right:0}
+
+.nav-section{padding:12px 0 4px}
+.nav-label{font-size:.63rem;font-weight:700;letter-spacing:.08em;color:#475569;
+  padding:0 18px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;
+  color:#94a3b8;text-decoration:none;font-size:.84rem;border-left:3px solid transparent;
+  transition:all .2s}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.nav-item.active{background:rgba(37,99,235,.2);color:#60a5fa;border-left-color:#3b82f6}
+.nav-item i{width:18px;text-align:center;font-size:.9rem}
+.nav-item .badge{margin-left:auto;background:#ef4444;color:#fff;border-radius:10px;
+  font-size:.65rem;padding:1px 6px;font-weight:700}
+
+.sidebar-logout{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);margin-top:auto}
+.sidebar-logout a{display:flex;align-items:center;gap:10px;color:#f87171;
+  text-decoration:none;font-size:.84rem;padding:8px 0;cursor:pointer}
+.sidebar-logout a:hover{color:#fca5a5}
+
+/* ─── Main Content ─── */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ─── Header ─── */
+.header{background:#fff;height:60px;display:flex;align-items:center;padding:0 24px;
+  border-bottom:1px solid #e5e7eb;gap:16px;position:sticky;top:0;z-index:100;
+  box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.header-toggle{background:none;border:none;color:#6b7280;font-size:1.1rem;cursor:pointer;
+  padding:6px;border-radius:6px;display:none}
+.header-toggle:hover{background:#f3f4f6}
+.header-title{flex:1;font-size:1rem;font-weight:600;color:#1f2937}
+.header-right{display:flex;align-items:center;gap:12px}
+.notif-btn{position:relative;background:none;border:none;color:#6b7280;font-size:1.05rem;
+  cursor:pointer;padding:7px;border-radius:8px;transition:all .2s}
+.notif-btn:hover{background:#f3f4f6;color:#1f2937}
+.notif-badge{position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;
+  border-radius:50%;width:16px;height:16px;font-size:.62rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.header-admin{display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 10px;
+  border-radius:8px;border:none;background:none;transition:background .2s;position:relative}
+.header-admin:hover{background:#f3f4f6}
+.header-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.header-admin .info{text-align:left}
+.header-admin .info h4{font-size:.82rem;font-weight:600;color:#1f2937}
+.header-admin .info p{font-size:.7rem;color:#6b7280}
+
+/* ─── Dropdown menus ─── */
+.dropdown{position:absolute;top:calc(100% + 8px);right:0;background:#fff;border-radius:10px;
+  box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid #e5e7eb;min-width:220px;
+  z-index:200;display:none;overflow:hidden}
+.dropdown.show{display:block}
+.dropdown-header{padding:12px 16px;border-bottom:1px solid #f3f4f6;font-size:.78rem;
+  font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+.dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 16px;
+  font-size:.84rem;color:#374151;cursor:pointer;transition:background .15s;text-decoration:none}
+.dropdown-item:hover{background:#f9fafb}
+.dropdown-item i{width:16px;text-align:center;color:#6b7280}
+.dropdown-divider{border:none;border-top:1px solid #f3f4f6;margin:4px 0}
+
+/* Notification dropdown */
+.notif-dropdown{min-width:320px;max-height:420px;overflow-y:auto}
+.notif-item{padding:12px 16px;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .15s}
+.notif-item:hover{background:#f9fafb}
+.notif-item.unread{background:#eff6ff}
+.notif-item h5{font-size:.82rem;font-weight:600;color:#1f2937}
+.notif-item p{font-size:.76rem;color:#6b7280;margin-top:2px}
+.notif-item .time{font-size:.7rem;color:#9ca3af;margin-top:4px}
+.notif-footer{padding:10px 16px;text-align:center}
+.notif-footer a{font-size:.8rem;color:#2563eb;text-decoration:none}
+
+/* ─── Page Content ─── */
+.content{padding:24px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* ─── Date range ─── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
+.page-header h2{font-size:1.4rem;font-weight:700;color:#1f2937}
+.page-header p{font-size:.83rem;color:#6b7280;margin-top:2px}
+.date-filter{display:flex;align-items:center;gap:8px}
+.date-filter select,.date-filter button{padding:7px 14px;border:1.5px solid #d1d5db;border-radius:8px;
+  font-size:.82rem;background:#fff;cursor:pointer;color:#374151}
+.date-filter button.active{background:#2563eb;border-color:#2563eb;color:#fff}
+
+/* ─── Stat Cards ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:22px}
+.stat-card{background:#fff;border-radius:14px;padding:18px 20px;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);border:1px solid #e5e7eb;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;
+  border-radius:50%;opacity:.08}
+.stat-card.blue::after{background:#2563eb}
+.stat-card.green::after{background:#059669}
+.stat-card.purple::after{background:#7c3aed}
+.stat-card.orange::after{background:#ea580c}
+.stat-card.red::after{background:#dc2626}
+.stat-card .icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;
+  align-items:center;justify-content:center;margin-bottom:12px}
+.stat-card.blue .icon-wrap{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+.stat-card.green .icon-wrap{background:linear-gradient(135deg,#059669,#047857)}
+.stat-card.purple .icon-wrap{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+.stat-card.orange .icon-wrap{background:linear-gradient(135deg,#ea580c,#c2410c)}
+.stat-card.red .icon-wrap{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.stat-card .icon-wrap i{color:#fff;font-size:19px}
+.stat-card .label{font-size:.75rem;color:#6b7280;font-weight:500;margin-bottom:4px}
+.stat-card .value{font-size:1.55rem;font-weight:700;color:#1f2937}
+.stat-card .change{font-size:.73rem;margin-top:5px}
+.stat-card .change.up{color:#059669}
+.stat-card .change.down{color:#dc2626}
+.stat-card .change i{margin-right:3px}
+
+/* ─── Charts Row ─── */
+.charts-row{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:22px}
+.chart-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06);
+  border:1px solid #e5e7eb}
+.chart-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.chart-card-header h3{font-size:.95rem;font-weight:700;color:#1f2937}
+.period-select{padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;
+  font-size:.78rem;color:#374151;background:#fff;cursor:pointer}
+.chart-wrap{position:relative;height:220px}
+.order-status-legend{margin-top:12px}
+.legend-item{display:flex;align-items:center;justify-content:space-between;
+  font-size:.79rem;padding:3px 0}
+.legend-dot{width:10px;height:10px;border-radius:50%;margin-right:8px;flex-shrink:0}
+.legend-left{display:flex;align-items:center}
+.legend-count{font-weight:600;color:#1f2937}
+
+/* ─── Tables ─── */
+.tables-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+.table-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06);
+  border:1px solid #e5e7eb}
+.table-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.table-card-header h3{font-size:.95rem;font-weight:700;color:#1f2937}
+.view-all{font-size:.78rem;color:#2563eb;text-decoration:none;cursor:pointer}
+.view-all:hover{text-decoration:underline}
+table{width:100%;border-collapse:collapse}
+th{font-size:.72rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;
+  padding:6px 10px;border-bottom:1px solid #f3f4f6;text-align:left}
+td{padding:9px 10px;font-size:.82rem;color:#374151;border-bottom:1px solid #f9fafb}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f9fafb}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
+.badge-pending{background:#fef3c7;color:#92400e}
+.badge-processing{background:#dbeafe;color:#1d4ed8}
+.badge-in_transit{background:#e0e7ff;color:#4338ca}
+.badge-delivered,.badge-completed,.badge-successful{background:#d1fae5;color:#065f46}
+.badge-cancelled,.badge-failed{background:#fee2e2;color:#991b1b}
+.badge-refunded{background:#f3f4f6;color:#374151}
+
+/* ─── Bottom Cards ─── */
+.bottom-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:22px}
+.bottom-card{background:#fff;border-radius:14px;padding:18px 16px;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);border:1px solid #e5e7eb;text-align:center}
+.bottom-card .bc-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 10px}
+.bottom-card .bc-label{font-size:.72rem;color:#6b7280;margin-bottom:4px}
+.bottom-card .bc-value{font-size:1rem;font-weight:700;color:#1f2937}
+
+/* ─── Full-page sections ─── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.section-header h2{font-size:1.2rem;font-weight:700;color:#1f2937}
+.btn{padding:8px 16px;border-radius:8px;font-size:.83rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:#2563eb;color:#fff}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{background:#f3f4f6;color:#374151;border:1px solid #d1d5db}
+.btn-secondary:hover{background:#e5e7eb}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-sm{padding:5px 12px;font-size:.77rem}
+
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start}
+.settings-nav{background:#fff;border-radius:14px;padding:8px;box-shadow:0 1px 6px rgba(0,0,0,.06);
+  border:1px solid #e5e7eb;position:sticky;top:80px}
+.settings-nav-item{padding:9px 14px;border-radius:8px;font-size:.84rem;color:#6b7280;
+  cursor:pointer;display:flex;align-items:center;gap:9px;transition:all .2s}
+.settings-nav-item:hover{background:#f3f4f6;color:#1f2937}
+.settings-nav-item.active{background:#eff6ff;color:#2563eb;font-weight:600}
+.settings-nav-item i{width:16px;text-align:center}
+.settings-panel{display:none}
+.settings-panel.active{display:block}
+.settings-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 6px rgba(0,0,0,.06);
+  border:1px solid #e5e7eb;margin-bottom:16px}
+.settings-card h3{font-size:1rem;font-weight:700;color:#1f2937;margin-bottom:4px}
+.settings-card .desc{font-size:.8rem;color:#6b7280;margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.87rem;
+  outline:none;transition:border-color .2s;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#2563eb}
+.form-group .hint{font-size:.73rem;color:#9ca3af;margin-top:4px}
+.toggle{display:flex;align-items:center;gap:10px}
+.toggle input[type=checkbox]{width:36px;height:20px;cursor:pointer;accent-color:#2563eb}
+
+/* Alert */
+.alert{padding:12px 16px;border-radius:8px;font-size:.84rem;margin-bottom:12px;display:none}
+.alert-success{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.alert-info{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;gap:6px;margin-top:16px;justify-content:center}
+.pagination button{padding:6px 12px;border:1.5px solid #d1d5db;border-radius:6px;
+  background:#fff;font-size:.8rem;cursor:pointer;color:#374151}
+.pagination button.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.pagination button:hover:not(.active){background:#f3f4f6}
+.pagination button:disabled{opacity:.5;cursor:not-allowed}
+
+/* Overlay/Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:28px;max-width:550px;width:90%;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:1.1rem;font-weight:700;margin-bottom:16px;color:#1f2937}
+.modal-close{float:right;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#6b7280}
+
+/* QR code */
+.qr-container{text-align:center;margin:16px 0}
+.qr-container img{border-radius:8px;border:4px solid #e5e7eb}
+.secret-box{background:#f3f4f6;border-radius:8px;padding:12px;font-family:monospace;
+  font-size:.9rem;text-align:center;letter-spacing:.1em;word-break:break-all;margin:10px 0}
+.backup-codes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.backup-code{background:#f3f4f6;border-radius:6px;padding:8px;font-family:monospace;
+  font-size:.85rem;text-align:center;font-weight:600}
+
+/* Status indicators */
+.system-status{display:inline-flex;align-items:center;gap:5px;font-size:.82rem}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.status-dot.green{background:#22c55e}
+.status-dot.red{background:#ef4444}
+.status-dot.yellow{background:#eab308}
+
+/* Responsive */
+@media(max-width:1200px){
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .bottom-cards{grid-template-columns:repeat(3,1fr)}
+  .charts-row{grid-template-columns:1fr}
+  .tables-row{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .header-toggle{display:flex}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .bottom-cards{grid-template-columns:repeat(2,1fr)}
+  .settings-grid{grid-template-columns:1fr}
+  .settings-nav{position:static}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .bottom-cards{grid-template-columns:1fr}
+  .content{padding:14px}
+}
+.overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999}
+.overlay-bg.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- Mobile overlay -->
+<div class="overlay-bg" id="overlayBg" onclick="closeSidebar()"></div>
+
+<!-- ─── Sidebar ─── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon"><i class="fas fa-gift"></i></div>
+    <div class="text"><h2>Gracegifthub</h2><p>Gift Hub</p></div>
+  </div>
+  <div class="admin-profile">
+    <div class="admin-avatar" style="position:relative">
+      <i class="fas fa-user-shield"></i>
+      <span class="online-dot"></span>
+    </div>
+    <div class="info">
+      <h4 id="sidebarAdminName">Admin</h4>
+      <p>Store Administrator</p>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <a class="nav-item active" onclick="showPage('dashboard')">
+        <i class="fas fa-tachometer-alt"></i> Dashboard</a>
+      <a class="nav-item" onclick="showPage('users')">
+        <i class="fas fa-users"></i> Users</a>
+      <a class="nav-item" onclick="showPage('sellers')">
+        <i class="fas fa-store"></i> Sellers</a>
+      <a class="nav-item" onclick="showPage('products')">
+        <i class="fas fa-box-open"></i> Products</a>
+      <a class="nav-item" onclick="showPage('categories')">
+        <i class="fas fa-tags"></i> Categories</a>
+      <a class="nav-item" onclick="showPage('orders')">
+        <i class="fas fa-shopping-cart"></i> Orders</a>
+      <a class="nav-item" onclick="showPage('payments')">
+        <i class="fas fa-credit-card"></i> Payments</a>
+      <a class="nav-item" onclick="showPage('reviews')">
+        <i class="fas fa-star"></i> Reviews</a>
+      <a class="nav-item" onclick="showPage('coupons')">
+        <i class="fas fa-ticket-alt"></i> Coupons</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Finance</div>
+      <a class="nav-item" onclick="showPage('transactions')">
+        <i class="fas fa-exchange-alt"></i> Transactions</a>
+      <a class="nav-item" onclick="showPage('payouts')">
+        <i class="fas fa-money-bill-wave"></i> Seller Payouts</a>
+      <a class="nav-item" onclick="showPage('wallets')">
+        <i class="fas fa-wallet"></i> Wallets</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">System</div>
+      <a class="nav-item" onclick="showPage('settings')">
+        <i class="fas fa-cog"></i> Settings</a>
+      <a class="nav-item" onclick="showPage('logs')">
+        <i class="fas fa-clipboard-list"></i> System Logs</a>
+      <a class="nav-item" onclick="showPage('api-settings')">
+        <i class="fas fa-plug"></i> API Settings</a>
+      <a class="nav-item" onclick="showPage('reports')">
+        <i class="fas fa-chart-bar"></i> Reports</a>
+    </div>
+  </nav>
+
+  <div class="sidebar-logout">
+    <a onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  </div>
+</aside>
+
+<!-- ─── Main Area ─── -->
+<div class="main">
+
+  <!-- Header -->
+  <header class="header">
+    <button class="header-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="header-title" id="headerTitle">Dashboard</div>
+    <div class="header-right">
+      <!-- Notifications -->
+      <div style="position:relative">
+        <button class="notif-btn" onclick="toggleDropdown('notifDropdown')">
+          <i class="fas fa-bell"></i>
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </button>
+        <div class="dropdown notif-dropdown" id="notifDropdown">
+          <div class="dropdown-header" style="display:flex;justify-content:space-between;align-items:center">
+            <span>Notifications</span>
+            <a style="font-size:.75rem;color:#2563eb;cursor:pointer" onclick="markAllRead()">Mark all read</a>
+          </div>
+          <div id="notifList"><div style="padding:16px;text-align:center;color:#9ca3af;font-size:.82rem">Loading…</div></div>
+          <div class="notif-footer"><a onclick="showPage('logs')">View System Logs →</a></div>
+        </div>
+      </div>
+
+      <!-- Admin profile -->
+      <div style="position:relative">
+        <button class="header-admin" onclick="toggleDropdown('adminDropdown')">
+          <div class="header-avatar"><i class="fas fa-user-shield"></i></div>
+          <div class="info">
+            <h4 id="headerAdminName">Admin</h4>
+            <p>Administrator</p>
+          </div>
+          <i class="fas fa-chevron-down" style="font-size:.7rem;color:#9ca3af;margin-left:4px"></i>
+        </button>
+        <div class="dropdown" id="adminDropdown">
+          <div class="dropdown-header">My Account</div>
+          <a class="dropdown-item" onclick="showPage('settings');showSettingsPanel('account')">
+            <i class="fas fa-user-cog"></i> Account Settings</a>
+          <a class="dropdown-item" onclick="showPage('settings');showSettingsPanel('security')">
+            <i class="fas fa-shield-alt"></i> Security & 2FA</a>
+          <hr class="dropdown-divider">
+          <a class="dropdown-item" style="color:#ef4444" onclick="doLogout()">
+            <i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ────────────── PAGES ────────────── -->
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div><h2>Dashboard</h2><p id="dashWelcome">Welcome back, Admin — here's what's happening with your store today.</p></div>
+        <div class="date-filter">
+          <i class="fas fa-calendar-alt" style="color:#6b7280"></i>
+          <select id="salesPeriod" onchange="loadSalesChart()">
+            <option value="today">Today</option>
+            <option value="7">Last 7 Days</option>
+            <option value="30" selected>Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">This Year</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="icon-wrap"><i class="fas fa-shopping-cart"></i></div>
+          <div class="label">Total Orders</div>
+          <div class="value" id="statOrders">—</div>
+          <div class="change" id="statOrdersChange"></div>
+        </div>
+        <div class="stat-card green">
+          <div class="icon-wrap"><i class="fas fa-dollar-sign"></i></div>
+          <div class="label">Total Sales</div>
+          <div class="value" id="statSales">—</div>
+          <div class="change" id="statSalesChange"></div>
+        </div>
+        <div class="stat-card purple">
+          <div class="icon-wrap"><i class="fas fa-users"></i></div>
+          <div class="label">Total Users</div>
+          <div class="value" id="statUsers">—</div>
+          <div class="change" id="statUsersChange"></div>
+        </div>
+        <div class="stat-card orange">
+          <div class="icon-wrap"><i class="fas fa-store"></i></div>
+          <div class="label">Total Sellers</div>
+          <div class="value" id="statSellers">—</div>
+        </div>
+        <div class="stat-card red">
+          <div class="icon-wrap"><i class="fas fa-box-open"></i></div>
+          <div class="label">Total Products</div>
+          <div class="value" id="statProducts">—</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3><i class="fas fa-chart-line" style="color:#2563eb;margin-right:6px"></i>Sales Overview</h3>
+            <select class="period-select" id="salesChartPeriod" onchange="loadSalesChart()">
+              <option value="today">Today</option>
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">This year</option>
+            </select>
+          </div>
+          <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3><i class="fas fa-chart-donut" style="color:#7c3aed;margin-right:6px"></i>Order Status</h3>
+          </div>
+          <div class="chart-wrap" style="height:180px"><canvas id="statusChart"></canvas></div>
+          <div class="order-status-legend" id="statusLegend"></div>
+          <div style="text-align:center;font-size:.78rem;color:#6b7280;margin-top:8px">
+            Total Orders: <strong id="statusTotal">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tables -->
+      <div class="tables-row">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h3>Recent Orders</h3>
+            <a class="view-all" onclick="showPage('orders')">View All</a>
+          </div>
+          <table>
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="recentOrdersBody"><tr><td colspan="5" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <h3>Top Selling Products</h3>
+            <a class="view-all" onclick="showPage('products')">View All</a>
+          </div>
+          <table>
+            <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+            <tbody id="topProductsBody"><tr><td colspan="3" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bottom stats -->
+      <div class="bottom-cards">
+        <div class="bottom-card">
+          <div class="bc-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
+            <i class="fas fa-chart-line" style="color:#fff"></i></div>
+          <div class="bc-label">Total Revenue</div>
+          <div class="bc-value" id="bcRevenue">—</div>
+        </div>
+        <div class="bottom-card">
+          <div class="bc-icon" style="background:linear-gradient(135deg,#f97316,#ea580c)">
+            <i class="fas fa-money-bill-wave" style="color:#fff"></i></div>
+          <div class="bc-label">Pending Payouts</div>
+          <div class="bc-value" id="bcPending">—</div>
+        </div>
+        <div class="bottom-card">
+          <div class="bc-icon" style="background:linear-gradient(135deg,#22c55e,#15803d)">
+            <i class="fas fa-ticket-alt" style="color:#fff"></i></div>
+          <div class="bc-label">Active Coupons</div>
+          <div class="bc-value" id="bcCoupons">—</div>
+        </div>
+        <div class="bottom-card">
+          <div class="bc-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">
+            <i class="fas fa-exclamation-triangle" style="color:#fff"></i></div>
+          <div class="bc-label">Low Stock Items</div>
+          <div class="bc-value" id="bcLowStock">—</div>
+        </div>
+        <div class="bottom-card">
+          <div class="bc-icon" style="background:linear-gradient(135deg,#059669,#047857)">
+            <i class="fas fa-server" style="color:#fff"></i></div>
+          <div class="bc-label">System Status</div>
+          <div class="bc-value system-status"><span class="status-dot green"></span> All Systems</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS ── -->
+    <div class="page" id="page-orders">
+      <div class="section-header">
+        <h2><i class="fas fa-shopping-cart" style="color:#2563eb;margin-right:8px"></i>Orders</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="orderStatusFilter" onchange="loadOrders(1)" style="padding:7px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.82rem">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="processing">Processing</option>
+            <option value="in_transit">In Transit</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="ordersBody"><tr><td colspan="6" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="ordersPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── USERS ── -->
+    <div class="page" id="page-users">
+      <div class="section-header">
+        <h2><i class="fas fa-users" style="color:#7c3aed;margin-right:8px"></i>Users</h2>
+        <input type="search" id="userSearch" placeholder="Search users…" oninput="loadUsers(1)"
+          style="padding:7px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.82rem;width:220px">
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Joined</th></tr></thead>
+          <tbody id="usersBody"><tr><td colspan="5" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="usersPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS ── -->
+    <div class="page" id="page-products">
+      <div class="section-header">
+        <h2><i class="fas fa-box-open" style="color:#ea580c;margin-right:8px"></i>Products</h2>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>In Stock</th></tr></thead>
+          <tbody id="productsBody"><tr><td colspan="4" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="productsPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── PAYMENTS ── -->
+    <div class="page" id="page-payments">
+      <div class="section-header">
+        <h2><i class="fas fa-credit-card" style="color:#059669;margin-right:8px"></i>Payments</h2>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Tx Ref</th><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Settlement</th><th>Date</th></tr></thead>
+          <tbody id="paymentsBody"><tr><td colspan="7" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="paymentsPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── TRANSACTIONS ── -->
+    <div class="page" id="page-transactions">
+      <div class="section-header"><h2><i class="fas fa-exchange-alt" style="color:#2563eb;margin-right:8px"></i>Transactions</h2></div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Tx Ref</th><th>Order ID</th><th>Customer</th><th>Amount</th><th>Net Profit</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="transactionsBody"><tr><td colspan="7" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="transactionsPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── COUPONS ── -->
+    <div class="page" id="page-coupons">
+      <div class="section-header">
+        <h2><i class="fas fa-ticket-alt" style="color:#059669;margin-right:8px"></i>Coupons</h2>
+        <button class="btn btn-primary btn-sm" onclick="openCouponModal()"><i class="fas fa-plus"></i> New Coupon</button>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Used</th><th>Status</th><th>Expires</th><th>Actions</th></tr></thead>
+          <tbody id="couponsBody"><tr><td colspan="7" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── LOGS ── -->
+    <div class="page" id="page-logs">
+      <div class="section-header">
+        <h2><i class="fas fa-clipboard-list" style="color:#6b7280;margin-right:8px"></i>System Logs</h2>
+        <div style="display:flex;gap:8px">
+          <select id="logLevel" onchange="loadLogs(1)" style="padding:7px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.82rem">
+            <option value="">All Levels</option>
+            <option value="info">Info</option>
+            <option value="warning">Warning</option>
+            <option value="error">Error</option>
+            <option value="critical">Critical</option>
+          </select>
+          <select id="logCategory" onchange="loadLogs(1)" style="padding:7px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.82rem">
+            <option value="">All Categories</option>
+            <option value="auth">Auth</option>
+            <option value="order">Order</option>
+            <option value="payment">Payment</option>
+            <option value="email">Email</option>
+            <option value="api">API</option>
+            <option value="settings">Settings</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Time</th><th>Level</th><th>Category</th><th>Message</th><th>IP</th></tr></thead>
+          <tbody id="logsBody"><tr><td colspan="5" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="logsPagination"></div>
+      </div>
+    </div>
+
+    <!-- ── REPORTS ── -->
+    <div class="page" id="page-reports">
+      <div class="section-header"><h2><i class="fas fa-chart-bar" style="color:#2563eb;margin-right:8px"></i>Reports</h2></div>
+      <div class="chart-card">
+        <div class="chart-card-header"><h3>Monthly Revenue — Last 12 Months</h3></div>
+        <div class="chart-wrap" style="height:300px"><canvas id="reportsChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ── SELLERS / PAYOUTS / WALLETS / REVIEWS / CATEGORIES (placeholders) ── -->
+    <div class="page" id="page-sellers">
+      <div class="section-header"><h2>Sellers</h2></div>
+      <div class="settings-card"><p style="color:#6b7280">This application uses a third-party product API (TP Gifts Store) as the supplier. Seller/marketplace functionality is not applicable to the current business model. Supplier management is done via the API Settings panel.</p></div>
+    </div>
+    <div class="page" id="page-reviews">
+      <div class="section-header"><h2>Reviews</h2></div>
+      <div class="settings-card"><p style="color:#6b7280">Product review functionality can be added in a future update. Reviews from the TP Gifts Store API are surfaced through the product catalogue.</p></div>
+    </div>
+    <div class="page" id="page-categories">
+      <div class="section-header"><h2>Categories</h2></div>
+      <div class="settings-card">
+        <p style="color:#6b7280">Product categories are sourced from the TP Gifts Store API. Category management happens on the supplier platform. You can configure markup by category in <a href="#" onclick="showPage('settings');showSettingsPanel('pricing')" style="color:#2563eb">Settings → Pricing</a>.</p>
+      </div>
+    </div>
+    <div class="page" id="page-payouts">
+      <div class="section-header"><h2>Seller Payouts</h2></div>
+      <div class="settings-card"><p style="color:#6b7280">This store uses a single-seller (owner) model. Settlement status is tracked per transaction. See <a href="#" onclick="showPage('transactions')" style="color:#2563eb">Transactions</a> for payment settlement details. Configure payment gateway settlement in <a href="#" onclick="showPage('settings');showSettingsPanel('payment')" style="color:#2563eb">Settings → Payment Gateway</a>.</p></div>
+    </div>
+    <div class="page" id="page-wallets">
+      <div class="section-header">
+        <h2><i class="fas fa-wallet" style="color:#16a34a;margin-right:8px"></i>Wallets</h2>
+        <div id="walletsTotalBadge" class="badge badge-processing" style="font-size:.78rem"></div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th>Customer</th><th>Email</th><th>Balance</th><th>Last Updated</th><th></th></tr></thead>
+          <tbody id="walletsBody"><tr><td colspan="5" style="text-align:center;color:#9ca3af">Loading…</td></tr></tbody>
+        </table>
+        <div class="pagination" id="walletsPagination"></div>
+      </div>
+
+      <div class="modal-overlay" id="walletTxModal">
+        <div class="modal" style="max-width:620px">
+          <button class="modal-close" onclick="closeModal('walletTxModal')">✕</button>
+          <h3 id="walletTxModalTitle">Wallet transactions</h3>
+          <div class="table-card" style="box-shadow:none">
+            <table>
+              <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th><th>Order</th></tr></thead>
+              <tbody id="walletTxBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="page" id="page-api-settings">
+      <div class="section-header"><h2><i class="fas fa-plug" style="color:#2563eb;margin-right:8px"></i>API Settings</h2></div>
+      <div id="apiTestResult" class="alert"></div>
+      <div class="settings-card">
+        <h3>TP Gifts Store API</h3>
+        <p class="desc">Connection details for the product catalogue API are managed server-side and are not shown here.</p>
+        <button class="btn btn-primary" onclick="testApi()"><i class="fas fa-plug"></i> Test API Connection</button>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="page" id="page-settings">
+      <div class="section-header"><h2><i class="fas fa-cog" style="color:#6b7280;margin-right:8px"></i>Settings</h2></div>
+      <div class="settings-grid">
+        <!-- Settings nav -->
+        <div class="settings-nav">
+          <div class="settings-nav-item active" onclick="showSettingsPanel('general')"><i class="fas fa-sliders-h"></i> General</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('contact')"><i class="fas fa-address-card"></i> Contact Information</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('account')"><i class="fas fa-user-cog"></i> Admin Account</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('security')"><i class="fas fa-shield-alt"></i> Security & 2FA</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('smtp')"><i class="fas fa-envelope"></i> Email / SMTP</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('pricing')"><i class="fas fa-percentage"></i> Pricing / Margin</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('payment')"><i class="fas fa-credit-card"></i> Payment Gateway</div>
+          <div class="settings-nav-item" onclick="showSettingsPanel('system')"><i class="fas fa-server"></i> System</div>
+        </div>
+
+        <!-- Settings panels -->
+        <div>
+          <!-- General -->
+          <div class="settings-panel active" id="sp-general">
+            <div class="settings-card">
+              <h3>General Settings</h3>
+              <p class="desc">Basic store configuration.</p>
+              <div class="alert alert-success" id="generalAlert"></div>
+              <div class="form-group">
+                <label>Site Name</label>
+                <input type="text" id="siteName" placeholder="Gracegifthub Gift Hub">
+              </div>
+              <div class="form-group">
+                <label>Admin Email (for notifications)</label>
+                <input type="email" id="adminEmail" placeholder="admin@example.com">
+              </div>
+              <button class="btn btn-primary" onclick="saveGeneralSettings()"><i class="fas fa-save"></i> Save Settings</button>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="settings-panel" id="sp-contact">
+            <div class="settings-card">
+              <h3>Contact Information</h3>
+              <p class="desc">This is shown publicly on the landing page, dashboard Support tab, and the WhatsApp support widget across the site. Changes apply immediately — no code changes or redeploys needed.</p>
+              <div class="alert alert-success" id="contactAlert"></div>
+              <div class="form-group">
+                <label>Support Email</label>
+                <input type="email" id="contactSupportEmail" placeholder="supportgracegifthub@gmail.com">
+              </div>
+              <div class="form-group">
+                <label>Support Phone (with country code)</label>
+                <input type="tel" id="contactSupportPhone" placeholder="+234 708 837 6847">
+              </div>
+              <div class="form-group">
+                <label>WhatsApp Link</label>
+                <input type="url" id="contactWhatsappLink" placeholder="https://wa.link/xxxxxx">
+              </div>
+              <button class="btn btn-primary" onclick="saveContactSettings()"><i class="fas fa-save"></i> Save Contact Information</button>
+            </div>
+          </div>
+
+          <!-- Account -->
+          <div class="settings-panel" id="sp-account">
+            <div class="settings-card">
+              <h3>Admin Account</h3>
+              <p class="desc">Update your email and password.</p>
+              <div class="alert" id="accountAlert"></div>
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="adminFullName">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="adminNewEmail">
+              </div>
+              <hr style="margin:16px 0;border-color:#f3f4f6">
+              <h4 style="font-size:.9rem;margin-bottom:12px;color:#374151">Change Password</h4>
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="currentPassword" placeholder="••••••••">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="newPassword" placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                  <label>Confirm New Password</label>
+                  <input type="password" id="confirmPassword" placeholder="••••••••">
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="saveAccount()"><i class="fas fa-save"></i> Update Account</button>
+            </div>
+          </div>
+
+          <!-- Security -->
+          <div class="settings-panel" id="sp-security">
+            <div class="settings-card">
+              <h3>Two-Factor Authentication (2FA)</h3>
+              <p class="desc">Add an extra layer of security using an authenticator app (Google Authenticator, Authy, etc.)</p>
+              <div class="alert" id="twoFaAlert"></div>
+              <div id="twoFaEnabled" style="display:none">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+                  <span style="background:#d1fae5;color:#065f46;border-radius:20px;padding:4px 12px;font-size:.82rem;font-weight:600">
+                    <i class="fas fa-check-circle"></i> 2FA Enabled</span>
+                </div>
+                <div class="form-group">
+                  <label>Password (to disable 2FA)</label>
+                  <input type="password" id="disable2faPassword" placeholder="••••••••">
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="disable2FA()"><i class="fas fa-times"></i> Disable 2FA</button>
+              </div>
+              <div id="twoFaDisabled">
+                <button class="btn btn-primary" onclick="setup2FA()"><i class="fas fa-qrcode"></i> Set Up 2FA</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMTP -->
+          <div class="settings-panel" id="sp-smtp">
+            <div class="settings-card">
+              <h3>Email / SMTP Configuration</h3>
+              <p class="desc">Configure Gmail SMTP. The App Password is stored in the SMTP_PASSWORD environment variable — never exposed to the browser.</p>
+              <div class="alert" id="smtpAlert"></div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>SMTP Host</label>
+                  <input type="text" id="smtpHost" value="smtp.gmail.com">
+                </div>
+                <div class="form-group">
+                  <label>SMTP Port</label>
+                  <input type="number" id="smtpPort" value="587">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Gmail Address / Username</label>
+                  <input type="email" id="smtpUsername" placeholder="you@gmail.com">
+                </div>
+                <div class="form-group">
+                  <label>App Password</label>
+                  <input type="password" id="smtpPasswordDisplay" placeholder="Set via SMTP_PASSWORD env var" disabled>
+                  <div class="hint">Set SMTP_PASSWORD as an environment variable. It is never stored in the database or returned by any API.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>From Email</label>
+                  <input type="email" id="smtpFromEmail" placeholder="noreply@yourdomain.com">
+                </div>
+                <div class="form-group">
+                  <label>From Name</label>
+                  <input type="text" id="smtpFromName" value="Gracegifthub Gift Hub">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="toggle">
+                  <input type="checkbox" id="smtpUseTls" checked>
+                  Use STARTTLS (recommended for port 587)
+                </label>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <button class="btn btn-primary" onclick="saveSmtpSettings()"><i class="fas fa-save"></i> Save SMTP Config</button>
+                <button class="btn btn-secondary" onclick="testSmtp()"><i class="fas fa-paper-plane"></i> Send Test Email</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing -->
+          <div class="settings-panel" id="sp-pricing">
+            <div class="settings-card">
+              <h3>Pricing / Profit Margin</h3>
+              <p class="desc">Configure your markup over the TP Gifts Store supplier cost.</p>
+              <div class="alert" id="pricingAlert"></div>
+              <div class="form-group">
+                <label>Markup Type</label>
+                <select id="markupType">
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₦)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Markup Value</label>
+                <input type="number" id="markupValue" placeholder="10" min="0" step="0.01">
+                <div class="hint">Example: 10 for 10% markup. Provider cost ₦10,000 → Customer price ₦11,000</div>
+              </div>
+              <div class="form-group">
+                <label>Payment Gateway Fee (%)</label>
+                <input type="number" id="gatewayFeePct" placeholder="1.4" step="0.01">
+                <div class="hint">Payscribe typically charges a percentage fee for local cards. This is deducted from gross profit to show net profit.</div>
+              </div>
+              <div class="settings-card" style="background:#f8fafc;border:1px solid #e2e8f0;padding:16px">
+                <h4 style="font-size:.88rem;margin-bottom:10px">Profit Calculation Example</h4>
+                <div id="pricingExample" style="font-size:.83rem;line-height:1.8;color:#374151"></div>
+              </div>
+              <button class="btn btn-primary" onclick="savePricing()" style="margin-top:14px"><i class="fas fa-save"></i> Save Pricing</button>
+            </div>
+          </div>
+
+          <!-- Payment -->
+          <div class="settings-panel" id="sp-payment">
+            <div class="settings-card">
+              <h3>Payment Gateway — Payscribe</h3>
+              <p class="desc">Payscribe handles customer payments. Keys are stored server-side only.</p>
+              <div class="form-group">
+                <label>Public Key</label>
+                <input type="text" value="Set via FLW_PUBLIC_KEY environment variable" readonly>
+              </div>
+              <div class="form-group">
+                <label>Secret Key</label>
+                <input type="password" value="Set via FLW_SECRET_KEY environment variable" readonly>
+                <div class="hint">Never exposed to the browser. Used server-side for payment verification.</div>
+              </div>
+              <div class="settings-card" style="background:#fffbeb;border-color:#fde68a;padding:14px">
+                <h4 style="font-size:.85rem;color:#92400e;margin-bottom:8px"><i class="fas fa-info-circle"></i> Settlement Architecture</h4>
+                <p style="font-size:.8rem;color:#78350f;line-height:1.6">
+                  Customer payments settle to your Payscribe merchant account.
+                  Payscribe batches and settles funds to your bank account per your configured settlement schedule.
+                  Net profit per transaction is tracked in the Transactions page.
+                  Configure your bank account and settlement schedule in your <strong>Payscribe Dashboard → Settlement</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- System -->
+          <div class="settings-panel" id="sp-system">
+            <div class="settings-card">
+              <h3>System Information</h3>
+              <p class="desc">Runtime environment and database information.</p>
+              <table style="width:100%">
+                <tr><td style="padding:8px 0;color:#6b7280;font-size:.83rem;width:180px">Application</td><td style="font-size:.83rem;font-weight:600">Gracegifthub Gift Hub</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;font-size:.83rem">Database</td><td style="font-size:.83rem;font-weight:600">SQLite (gracegifthub.db)</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;font-size:.83rem">Admin URL</td><td style="font-size:.83rem;font-weight:600">/admin</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;font-size:.83rem">WSGI Files</td><td style="font-size:.83rem;font-weight:600">wsgi.py / passenger_wsgi.py</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;font-size:.83rem">Hosting</td><td style="font-size:.83rem;font-weight:600">PythonAnywhere & LyteHosting compatible</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── Modals ── -->
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="orderDetailModal">
+  <div class="modal" style="max-width:620px">
+    <button class="modal-close" onclick="closeModal('orderDetailModal')">✕</button>
+    <h3>Order Details</h3>
+    <div id="orderDetailContent"></div>
+  </div>
+</div>
+
+<!-- Coupon Modal -->
+<div class="modal-overlay" id="couponModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('couponModal')">✕</button>
+    <h3>New Coupon</h3>
+    <div class="alert" id="couponAlert"></div>
+    <div class="form-group"><label>Code</label><input type="text" id="couponCode" placeholder="SAVE20" style="text-transform:uppercase"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Type</label>
+        <select id="couponType"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed (₦)</option></select>
+      </div>
+      <div class="form-group"><label>Value</label><input type="number" id="couponValue" placeholder="20" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Min Order (₦)</label><input type="number" id="couponMinOrder" value="0" min="0"></div>
+      <div class="form-group"><label>Max Uses</label><input type="number" id="couponMaxUses" placeholder="Unlimited"></div>
+    </div>
+    <div class="form-group"><label>Expires At</label><input type="datetime-local" id="couponExpires"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-primary" onclick="saveCoupon()"><i class="fas fa-save"></i> Create Coupon</button>
+      <button class="btn btn-secondary" onclick="closeModal('couponModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2FA Setup Modal -->
+<div class="modal-overlay" id="twoFaModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('twoFaModal')">✕</button>
+    <h3><i class="fas fa-shield-alt"></i> Set Up Two-Factor Authentication</h3>
+    <div id="twoFaStep1">
+      <p style="font-size:.83rem;color:#6b7280;margin-bottom:12px">Scan this QR code with your authenticator app:</p>
+      <div class="qr-container"><img id="twoFaQr" src="" alt="QR Code" style="width:200px;height:200px"></div>
+      <p style="font-size:.78rem;color:#6b7280;text-align:center">Or enter this secret manually:</p>
+      <div class="secret-box" id="twoFaSecret">Loading…</div>
+      <div class="form-group" style="margin-top:16px">
+        <label>Enter the 6-digit code from your app to verify:</label>
+        <input type="text" id="twoFaCode" placeholder="000000" maxlength="6" style="text-align:center;font-size:1.2rem;letter-spacing:.2em">
+      </div>
+      <div class="alert" id="twoFaModalAlert"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="verify2FA()"><i class="fas fa-check"></i> Verify & Enable</button>
+        <button class="btn btn-secondary" onclick="closeModal('twoFaModal')">Cancel</button>
+      </div>
+    </div>
+    <div id="twoFaStep2" style="display:none">
+      <div style="text-align:center;margin-bottom:16px">
+        <i class="fas fa-check-circle" style="font-size:3rem;color:#059669"></i>
+        <h4 style="margin-top:10px;color:#065f46">2FA Enabled Successfully!</h4>
+      </div>
+      <p style="font-size:.83rem;color:#374151;margin-bottom:10px"><strong>Save these backup codes.</strong> Each can be used once if you lose your authenticator:</p>
+      <div class="backup-codes" id="backupCodes"></div>
+      <p style="font-size:.75rem;color:#9ca3af;margin-top:10px">Store these codes in a safe place. They will not be shown again.</p>
+      <button class="btn btn-primary" onclick="closeModal('twoFaModal')" style="margin-top:14px;width:100%">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────── Global state ────────────────
+let adminData = null;
+let salesChartInstance = null;
+let statusChartInstance = null;
+let reportsChartInstance = null;
+
+// ──────────────── Init ────────────────
+async function init(){
+  try{
+    const r = await fetch('/admin/api/me',{credentials:'include'});
+    if(!r.ok){ window.location.href='/admin/login'; return; }
+    const d = await r.json();
+    adminData = d.admin;
+    document.getElementById('sidebarAdminName').textContent = adminData.full_name || adminData.email;
+    document.getElementById('headerAdminName').textContent = adminData.full_name || adminData.email;
+    document.getElementById('dashWelcome').textContent =
+      `Welcome back, ${adminData.full_name || 'Admin'} — here's what's happening with your store today.`;
+    loadDashboard();
+    loadNotifications();
+  }catch(e){ window.location.href='/admin/login'; }
+}
+
+// ──────────────── Navigation ────────────────
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+page+"'")) n.classList.add('active');
+  });
+  document.getElementById('headerTitle').textContent =
+    page.charAt(0).toUpperCase()+page.slice(1).replace('-',' ');
+  closeSidebar();
+
+  // Load page data
+  const loaders = {
+    orders:()=>loadOrders(1), users:()=>loadUsers(1), products:()=>loadProducts(1),
+    payments:()=>loadPayments(1), transactions:()=>loadTransactions(1),
+    coupons:()=>loadCoupons(), logs:()=>loadLogs(1),
+    reports:()=>loadReports(), settings:()=>loadSettings(),
+    'api-settings':()=>testApiStatus(), wallets:()=>loadWallets(1),
+  };
+  if(loaders[page]) loaders[page]();
+}
+
+// ──────────────── Sidebar ────────────────
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlayBg').classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlayBg').classList.remove('show');
+}
+
+// ──────────────── Dropdowns ────────────────
+function toggleDropdown(id){
+  document.querySelectorAll('.dropdown').forEach(d=>{
+    if(d.id!==id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.notif-btn')&&!e.target.closest('#notifDropdown')&&
+     !e.target.closest('.header-admin')&&!e.target.closest('#adminDropdown')){
+    document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('show'));
+  }
+});
+
+// ──────────────── Format ────────────────
+function fmt(n){return '₦'+Number(n).toLocaleString('en-NG',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtDate(s){return new Date(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function badge(status){return `<span class="badge badge-${status||'pending'}">${(status||'pending').replace('_',' ')}</span>`;}
+
+// ──────────────── Dashboard ────────────────
+async function loadDashboard(){
+  const [stats, bottom] = await Promise.all([
+    fetch('/admin/api/dashboard/stats',{credentials:'include'}).then(r=>r.json()),
+    fetch('/admin/api/dashboard/bottom-stats',{credentials:'include'}).then(r=>r.json()),
+  ]);
+  document.getElementById('statOrders').textContent = stats.total_orders?.toLocaleString()||'0';
+  document.getElementById('statSales').textContent = fmt(stats.total_sales||0);
+  document.getElementById('statUsers').textContent = stats.total_users?.toLocaleString()||'0';
+  document.getElementById('statSellers').textContent = '0';
+  document.getElementById('statProducts').textContent = stats.total_products?.toLocaleString()||'0';
+  // Change indicators
+  setChange('statOrdersChange', stats.orders_change);
+  setChange('statSalesChange', stats.sales_change);
+  setChange('statUsersChange', stats.users_change);
+  // Bottom
+  document.getElementById('bcRevenue').textContent = fmt(bottom.total_revenue||0);
+  document.getElementById('bcPending').textContent = fmt(bottom.pending_payouts||0);
+  document.getElementById('bcCoupons').textContent = bottom.active_coupons||'0';
+  document.getElementById('bcLowStock').textContent = bottom.low_stock||'0';
+  loadSalesChart();
+  loadStatusChart();
+  loadRecentOrders();
+  loadTopProducts();
+}
+
+function setChange(id, pct){
+  const el=document.getElementById(id);
+  if(el&&pct!==undefined){
+    const up=pct>=0;
+    el.className='change '+(up?'up':'down');
+    el.innerHTML=`<i class="fas fa-arrow-${up?'up':'down'}"></i>${Math.abs(pct)}% vs last 30 days`;
+  }
+}
+
+async function loadSalesChart(){
+  const period = document.getElementById('salesChartPeriod').value;
+  const data = await fetch(`/admin/api/dashboard/sales-chart?period=${period}`,{credentials:'include'}).then(r=>r.json());
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  if(salesChartInstance) salesChartInstance.destroy();
+  salesChartInstance = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels: data.map(d=>d.date),
+      datasets:[{
+        label:'Revenue (₦)',
+        data: data.map(d=>d.revenue),
+        borderColor:'#2563eb', backgroundColor:'rgba(37,99,235,.08)',
+        borderWidth:2, pointRadius:3, tension:.4, fill:true,
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{maxTicksLimit:8,font:{size:10}}},y:{ticks:{callback:v=>'₦'+v.toLocaleString(),font:{size:10}}}}}
+  });
+}
+
+async function loadStatusChart(){
+  const data = await fetch('/admin/api/dashboard/order-status',{credentials:'include'}).then(r=>r.json());
+  const colors={'pending':'#fbbf24','processing':'#3b82f6','in_transit':'#a855f7','delivered':'#22c55e','cancelled':'#ef4444'};
+  const ctx = document.getElementById('statusChart').getContext('2d');
+  if(statusChartInstance) statusChartInstance.destroy();
+  const total = data.reduce((s,d)=>s+d.count,0);
+  document.getElementById('statusTotal').textContent = total.toLocaleString();
+  statusChartInstance = new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:data.map(d=>d.status),datasets:[{data:data.map(d=>d.count),
+      backgroundColor:data.map(d=>colors[d.status]||'#94a3b8'),borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}`}}},
+      cutout:'65%'}
+  });
+  const legend = document.getElementById('statusLegend');
+  legend.innerHTML = data.map(d=>`
+    <div class="legend-item">
+      <div class="legend-left"><div class="legend-dot" style="background:${colors[d.status]||'#94a3b8'}"></div>${d.status}</div>
+      <div class="legend-count">${d.count} (${total>0?Math.round(d.count/total*100):0}%)</div>
+    </div>`).join('');
+}
+
+async function loadRecentOrders(){
+  const data = await fetch('/admin/api/orders/recent?limit=8',{credentials:'include'}).then(r=>r.json());
+  const tbody = document.getElementById('recentOrdersBody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px">No orders yet</td></tr>';return;}
+  tbody.innerHTML = data.map(o=>`
+    <tr onclick="openOrderDetail(${o.id})" style="cursor:pointer">
+      <td><span style="color:#2563eb;font-weight:600">#${o.id}</span></td>
+      <td>${esc(o.customer||'—')}</td>
+      <td>${fmt(o.total)}</td>
+      <td>${badge(o.status)}</td>
+      <td>${fmtDate(o.created_at)}</td>
+    </tr>`).join('');
+}
+
+async function loadTopProducts(){
+  const data = await fetch('/admin/api/products/top-selling?limit=8',{credentials:'include'}).then(r=>r.json());
+  const tbody = document.getElementById('topProductsBody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#9ca3af;padding:20px">No sales data yet</td></tr>';return;}
+  tbody.innerHTML = data.map(p=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        ${p.image_url?`<img src="${esc(p.image_url)}" style="width:32px;height:32px;border-radius:6px;object-fit:cover">`:
+          `<div style="width:32px;height:32px;border-radius:6px;background:#e5e7eb;display:flex;align-items:center;justify-content:center"><i class="fas fa-box" style="color:#9ca3af;font-size:.75rem"></i></div>`}
+        <span style="font-weight:500;font-size:.82rem">${esc(p.name)}</span></div></td>
+      <td>${p.units_sold}</td>
+      <td>${fmt(p.revenue)}</td>
+    </tr>`).join('');
+}
+
+// ──────────────── Notifications ────────────────
+async function loadNotifications(){
+  const d = await fetch('/admin/api/notifications',{credentials:'include'}).then(r=>r.json());
+  const badge = document.getElementById('notifBadge');
+  if(d.unread>0){badge.textContent=d.unread>99?'99+':d.unread;badge.style.display='flex';}
+  else badge.style.display='none';
+  const list = document.getElementById('notifList');
+  if(!d.notifications.length){
+    list.innerHTML='<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.82rem">No notifications</div>';
+    return;
+  }
+  list.innerHTML = d.notifications.slice(0,10).map(n=>`
+    <div class="notif-item ${n.is_read?'':'unread'}" onclick="markRead(${n.id})">
+      <h5>${esc(n.title)}</h5>
+      <p>${esc(n.message.substring(0,80))}${n.message.length>80?'…':''}</p>
+      <div class="time">${fmtDate(n.created_at)}</div>
+    </div>`).join('');
+}
+
+async function markRead(id){
+  await fetch(`/admin/api/notifications/${id}/read`,{method:'PATCH',credentials:'include'});
+  loadNotifications();
+}
+async function markAllRead(){
+  await fetch('/admin/api/notifications/read-all',{method:'POST',credentials:'include'});
+  loadNotifications();
+  document.getElementById('notifDropdown').classList.remove('show');
+}
+
+// ──────────────── Orders ────────────────
+let ordersPage=1;
+async function loadOrders(page=1){
+  ordersPage=page;
+  const status=document.getElementById('orderStatusFilter').value;
+  const d = await fetch(`/admin/api/orders?page=${page}&per_page=15${status?'&status='+status:''}`,{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('ordersBody');
+  if(!d.orders.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:20px">No orders found</td></tr>';return;}
+  tbody.innerHTML=d.orders.map(o=>`
+    <tr>
+      <td><span style="color:#2563eb;font-weight:600">#${o.id}</span> <small style="color:#9ca3af">${esc(o.order_ref)}</small></td>
+      <td>${esc(o.customer||'—')}</td>
+      <td>${fmt(o.total)}</td>
+      <td>${badge(o.status)}</td>
+      <td>${fmtDate(o.created_at)}</td>
+      <td>
+        <button class="btn btn-sm btn-secondary" onclick="openOrderDetail(${o.id})"><i class="fas fa-eye"></i></button>
+        <select onchange="updateOrderStatus(${o.id},this.value)" style="margin-left:4px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px;font-size:.75rem">
+          ${['pending','processing','in_transit','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
+        </select>
+      </td>
+    </tr>`).join('');
+  renderPagination('ordersPagination',d.pages,page,'loadOrders');
+}
+
+async function updateOrderStatus(id,status){
+  await fetch(`/admin/api/orders/${id}/status`,{method:'PATCH',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+}
+
+async function openOrderDetail(id){
+  const o = await fetch(`/admin/api/orders/${id}`,{credentials:'include'}).then(r=>r.json());
+  document.getElementById('orderDetailContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><strong>Order Ref:</strong> ${esc(o.order_ref)}</div>
+      <div><strong>Customer:</strong> ${esc(o.customer||'—')}</div>
+      <div><strong>Status:</strong> ${badge(o.status)}</div>
+      <div><strong>Date:</strong> ${fmtDate(o.created_at)}</div>
+      <div><strong>Subtotal:</strong> ${fmt(o.subtotal)}</div>
+      <div><strong>Delivery:</strong> ${fmt(o.delivery_fee)}</div>
+      <div><strong>Discount:</strong> ${fmt(o.discount)}</div>
+      <div><strong>Total:</strong> <span style="font-weight:700;color:#059669">${fmt(o.total)}</span></div>
+    </div>
+    <h4 style="margin-bottom:10px">Items</h4>
+    <table><thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th></tr></thead>
+    <tbody>${(o.items||[]).map(i=>`<tr><td>${esc(i.product_name||'—')}</td><td>${i.quantity}</td><td>${fmt(i.unit_price)}</td></tr>`).join('')}</tbody></table>
+    ${o.payments&&o.payments.length?`<h4 style="margin:12px 0 8px">Payments</h4>
+    <table><thead><tr><th>Tx Ref</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>${o.payments.map(p=>`<tr><td style="font-size:.75rem">${esc(p.tx_ref)}</td><td>${fmt(p.amount)}</td><td>${badge(p.status)}</td></tr>`).join('')}</tbody></table>`:''}
+    ${o.delivery_address?`<div style="margin-top:12px;font-size:.82rem;color:#6b7280">
+      <strong>Delivery:</strong> ${esc(o.delivery_address)}, ${esc(o.delivery_state||'')} ${esc(o.delivery_country||'')}
+    </div>`:''}`;
+  document.getElementById('orderDetailModal').classList.add('show');
+}
+
+// ──────────────── Users ────────────────
+// ──────────────── Wallets ────────────────
+async function loadWallets(page=1){
+  const d=await fetch(`/admin/api/wallets?page=${page}&per_page=15`,{credentials:'include'}).then(r=>r.json());
+  document.getElementById('walletsTotalBadge').textContent = `Total balance: ₦${Number(d.total_balance).toLocaleString()}`;
+  const tbody=document.getElementById('walletsBody');
+  if(!d.wallets.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px">No customer wallets yet</td></tr>';return;}
+  tbody.innerHTML=d.wallets.map(w=>`
+    <tr>
+      <td>${esc(w.full_name)}</td>
+      <td>${esc(w.email)}</td>
+      <td><strong>₦${Number(w.balance).toLocaleString()}</strong></td>
+      <td>${w.updated_at?fmtDate(w.updated_at):'—'}</td>
+      <td><button class="btn btn-sm" onclick="showWalletTx(${w.user_id},'${esc(w.full_name).replace(/'/g,"")}')">View transactions</button></td>
+    </tr>`).join('');
+  renderPagination('walletsPagination',d.pages,page,'loadWallets');
+}
+
+async function showWalletTx(userId,name){
+  document.getElementById('walletTxModalTitle').textContent=`Wallet transactions — ${name}`;
+  const tbody=document.getElementById('walletTxBody');
+  tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9ca3af">Loading…</td></tr>';
+  document.getElementById('walletTxModal').classList.add('show');
+  const d=await fetch(`/admin/api/wallets/${userId}/transactions`,{credentials:'include'}).then(r=>r.json());
+  if(!d.transactions.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px">No transactions yet</td></tr>';return;}
+  tbody.innerHTML=d.transactions.map(t=>`
+    <tr>
+      <td style="font-size:.78rem;white-space:nowrap">${fmtDate(t.created_at)}</td>
+      <td style="text-transform:capitalize">${t.tx_type}</td>
+      <td>₦${Number(t.amount).toLocaleString()}</td>
+      <td><span class="badge badge-${t.status==='successful'?'delivered':t.status==='failed'?'cancelled':'processing'}">${t.status}</span></td>
+      <td>${t.order_id?'#'+t.order_id:'—'}</td>
+    </tr>`).join('');
+}
+
+// ──────────────── Users ────────────────
+async function loadUsers(page=1){
+  const search=document.getElementById('userSearch').value;
+  const d=await fetch(`/admin/api/users?page=${page}&per_page=15&search=${encodeURIComponent(search)}`,{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('usersBody');
+  if(!d.users.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px">No users found</td></tr>';return;}
+  tbody.innerHTML=d.users.map(u=>`
+    <tr>
+      <td>${esc(u.full_name)}</td>
+      <td>${esc(u.email)}</td>
+      <td>${esc(u.phone||'—')}</td>
+      <td><span class="badge badge-processing">${u.order_count} orders</span></td>
+      <td>${fmtDate(u.created_at)}</td>
+    </tr>`).join('');
+  renderPagination('usersPagination',d.pages,page,'loadUsers');
+}
+
+// ──────────────── Products ────────────────
+async function loadProducts(page=1){
+  const d=await fetch(`/admin/api/products?page=${page}&per_page=20`,{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('productsBody');
+  if(!d.products.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No products</td></tr>';return;}
+  tbody.innerHTML=d.products.map(p=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        ${p.image_url?`<img src="${esc(p.image_url)}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">`:''}
+        <span>${esc(p.name)}</span></div></td>
+      <td>${esc(p.category)}</td>
+      <td>${fmt(p.price)}</td>
+      <td>${p.in_stock?'<span class="badge badge-successful">In Stock</span>':'<span class="badge badge-cancelled">Out of Stock</span>'}</td>
+    </tr>`).join('');
+  renderPagination('productsPagination',d.pages,page,'loadProducts');
+}
+
+// ──────────────── Payments ────────────────
+async function loadPayments(page=1){
+  const d=await fetch(`/admin/api/payments?page=${page}&per_page=15`,{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('paymentsBody');
+  if(!d.payments.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px">No payments</td></tr>';return;}
+  tbody.innerHTML=d.payments.map(p=>`
+    <tr>
+      <td style="font-size:.75rem;font-family:monospace">${esc(p.tx_ref)}</td>
+      <td>#${p.order_id}</td>
+      <td>${esc(p.customer||'—')}</td>
+      <td>${fmt(p.amount)}</td>
+      <td>${badge(p.status)}</td>
+      <td>${badge(p.settlement_status)}</td>
+      <td>${fmtDate(p.created_at)}</td>
+    </tr>`).join('');
+  renderPagination('paymentsPagination',d.pages,page,'loadPayments');
+}
+
+// ──────────────── Transactions ────────────────
+async function loadTransactions(page=1){
+  const d=await fetch(`/admin/api/payments?page=${page}&per_page=15`,{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('transactionsBody');
+  if(!d.payments.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px">No transactions</td></tr>';return;}
+  tbody.innerHTML=d.payments.map(p=>`
+    <tr>
+      <td style="font-size:.73rem;font-family:monospace">${esc(p.tx_ref)}</td>
+      <td>#${p.order_id}</td>
+      <td>${esc(p.customer||'—')}</td>
+      <td>${fmt(p.amount)}</td>
+      <td style="color:${p.net_profit>0?'#059669':'#374151'};font-weight:600">${fmt(p.net_profit||0)}</td>
+      <td>${badge(p.status)}</td>
+      <td>${fmtDate(p.created_at)}</td>
+    </tr>`).join('');
+  renderPagination('transactionsPagination',d.pages,page,'loadTransactions');
+}
+
+// ──────────────── Coupons ────────────────
+async function loadCoupons(){
+  const data=await fetch('/admin/api/coupons',{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('couponsBody');
+  if(!data.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px">No coupons</td></tr>';return;}
+  tbody.innerHTML=data.map(c=>`
+    <tr>
+      <td><span style="font-weight:700;font-family:monospace">${esc(c.code)}</span></td>
+      <td>${c.discount_type}</td>
+      <td>${c.discount_type==='percentage'?c.discount_value+'%':'₦'+c.discount_value}</td>
+      <td>${c.times_used}${c.max_uses?'/'+c.max_uses:''}</td>
+      <td>${c.is_active?'<span class="badge badge-successful">Active</span>':'<span class="badge badge-cancelled">Inactive</span>'}</td>
+      <td>${c.expires_at?fmtDate(c.expires_at):'Never'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteCoupon(${c.id})"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+
+function openCouponModal(){document.getElementById('couponModal').classList.add('show');}
+async function saveCoupon(){
+  const data={
+    code:document.getElementById('couponCode').value,
+    discount_type:document.getElementById('couponType').value,
+    discount_value:document.getElementById('couponValue').value,
+    min_order:document.getElementById('couponMinOrder').value,
+    max_uses:document.getElementById('couponMaxUses').value||null,
+    expires_at:document.getElementById('couponExpires').value||null,
+  };
+  const r=await fetch('/admin/api/coupons',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const d=await r.json();
+  if(r.ok){closeModal('couponModal');loadCoupons();}
+  else showAlert('couponAlert','error',d.error||'Failed to create coupon.');
+}
+async function deleteCoupon(id){
+  if(!confirm('Delete this coupon?')) return;
+  await fetch(`/admin/api/coupons/${id}`,{method:'DELETE',credentials:'include'});
+  loadCoupons();
+}
+
+// ──────────────── Logs ────────────────
+async function loadLogs(page=1){
+  const level=document.getElementById('logLevel').value;
+  const cat=document.getElementById('logCategory').value;
+  const d=await fetch(`/admin/api/logs?page=${page}&per_page=30${level?'&level='+level:''}${cat?'&category='+cat:''}`,{credentials:'include'}).then(r=>r.json());
+  const tbody=document.getElementById('logsBody');
+  const levelColors={info:'#2563eb',warning:'#d97706',error:'#dc2626',critical:'#7c3aed'};
+  if(!d.logs.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px">No logs</td></tr>';return;}
+  tbody.innerHTML=d.logs.map(l=>`
+    <tr>
+      <td style="font-size:.75rem;color:#9ca3af;white-space:nowrap">${new Date(l.created_at).toLocaleString()}</td>
+      <td><span style="color:${levelColors[l.level]||'#374151'};font-weight:600;font-size:.78rem;text-transform:uppercase">${l.level}</span></td>
+      <td><span class="badge badge-processing" style="font-size:.68rem">${l.category}</span></td>
+      <td style="font-size:.81rem">${esc(l.message)}</td>
+      <td style="font-size:.75rem;color:#9ca3af">${l.ip_address||'—'}</td>
+    </tr>`).join('');
+  renderPagination('logsPagination',d.pages,page,'loadLogs');
+}
+
+// ──────────────── Reports ────────────────
+async function loadReports(){
+  const d=await fetch('/admin/api/reports/overview',{credentials:'include'}).then(r=>r.json());
+  const ctx=document.getElementById('reportsChart').getContext('2d');
+  if(reportsChartInstance) reportsChartInstance.destroy();
+  reportsChartInstance=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:d.monthly_revenue.map(m=>m.month),
+      datasets:[{label:'Revenue (₦)',data:d.monthly_revenue.map(m=>m.revenue),
+        backgroundColor:'rgba(37,99,235,.7)',borderRadius:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>'₦'+v.toLocaleString()}}}}
+  });
+}
+
+// ──────────────── Settings ────────────────
+function showSettingsPanel(id){
+  document.querySelectorAll('.settings-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.settings-nav-item').forEach(n=>n.classList.remove('active'));
+  const panel=document.getElementById('sp-'+id);
+  if(panel) panel.classList.add('active');
+  document.querySelectorAll('.settings-nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+  });
+}
+
+async function loadSettings(){
+  const d=await fetch('/admin/api/settings/general',{credentials:'include'}).then(r=>r.json());
+  setVal('siteName',d.site_name||'Gracegifthub Gift Hub');
+  setVal('adminEmail',d.admin_email||adminData?.email||'');
+  setVal('smtpHost',d.smtp_host||'smtp.gmail.com');
+  setVal('smtpPort',d.smtp_port||'587');
+  setVal('smtpUsername',d.smtp_username||'');
+  setVal('smtpFromEmail',d.smtp_from_email||'');
+  setVal('smtpFromName',d.smtp_from_name||'Gracegifthub Gift Hub');
+  document.getElementById('smtpUseTls').checked=(d.smtp_use_tls||'true')==='true';
+  setVal('markupType',d.markup_type||'percentage');
+  setVal('markupValue',d.markup_value||'10');
+  setVal('gatewayFeePct',d.gateway_fee_pct||'1.4');
+  // Contact information
+  const c=await fetch('/admin/api/settings/contact',{credentials:'include'}).then(r=>r.json());
+  setVal('contactSupportEmail',c.support_email||'');
+  setVal('contactSupportPhone',c.support_phone||'');
+  setVal('contactWhatsappLink',c.whatsapp_link||'');
+  // Admin account
+  if(adminData){
+    setVal('adminFullName',adminData.full_name||'');
+    setVal('adminNewEmail',adminData.email||'');
+  }
+  // 2FA state
+  if(adminData?.totp_enabled){
+    document.getElementById('twoFaEnabled').style.display='block';
+    document.getElementById('twoFaDisabled').style.display='none';
+  } else {
+    document.getElementById('twoFaEnabled').style.display='none';
+    document.getElementById('twoFaDisabled').style.display='block';
+  }
+  updatePricingExample();
+}
+
+function setVal(id,val){const el=document.getElementById(id);if(el)el.value=val;}
+
+async function saveGeneralSettings(){
+  const d={site_name:document.getElementById('siteName').value,admin_email:document.getElementById('adminEmail').value};
+  const r=await fetch('/admin/api/settings/general',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  showAlert('generalAlert',r.ok?'success':'error',r.ok?'Settings saved.':res.error||'Failed.');
+}
+
+async function saveContactSettings(){
+  const d={support_email:document.getElementById('contactSupportEmail').value,
+    support_phone:document.getElementById('contactSupportPhone').value,
+    whatsapp_link:document.getElementById('contactWhatsappLink').value};
+  const r=await fetch('/admin/api/settings/contact',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  showAlert('contactAlert',r.ok?'success':'error',r.ok?'Contact information saved — the site updates immediately.':res.error||'Failed.');
+}
+
+async function saveSmtpSettings(){
+  const d={smtp_host:document.getElementById('smtpHost').value,
+    smtp_port:document.getElementById('smtpPort').value,
+    smtp_username:document.getElementById('smtpUsername').value,
+    smtp_from_email:document.getElementById('smtpFromEmail').value,
+    smtp_from_name:document.getElementById('smtpFromName').value,
+    smtp_use_tls:document.getElementById('smtpUseTls').checked?'true':'false'};
+  const r=await fetch('/admin/api/settings/general',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  showAlert('smtpAlert',r.ok?'success':'error',r.ok?'SMTP settings saved. Remember to set SMTP_PASSWORD as an environment variable.':res.error||'Failed.');
+}
+
+async function testSmtp(){
+  showAlert('smtpAlert','info','Sending test email…');
+  const r=await fetch('/admin/api/settings/smtp-test',{method:'POST',credentials:'include'});
+  const d=await r.json();
+  showAlert('smtpAlert',r.ok?'success':'error',r.ok?d.message:d.error||'Test failed.');
+}
+
+async function saveAccount(){
+  const pw=document.getElementById('newPassword').value;
+  const cpw=document.getElementById('confirmPassword').value;
+  if(pw&&pw!==cpw){showAlert('accountAlert','error','Passwords do not match.');return;}
+  const d={email:document.getElementById('adminNewEmail').value,
+    full_name:document.getElementById('adminFullName').value};
+  if(pw){d.new_password=pw;d.current_password=document.getElementById('currentPassword').value;}
+  const r=await fetch('/admin/api/settings/account',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  if(r.ok){adminData=res.admin;showAlert('accountAlert','success','Account updated.');}
+  else showAlert('accountAlert','error',res.error||'Update failed.');
+}
+
+async function savePricing(){
+  const d={markup_type:document.getElementById('markupType').value,
+    markup_value:document.getElementById('markupValue').value,
+    gateway_fee_pct:document.getElementById('gatewayFeePct').value};
+  const r=await fetch('/admin/api/settings/pricing',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const res=await r.json();
+  showAlert('pricingAlert',r.ok?'success':'error',r.ok?'Pricing saved.':res.error||'Failed.');
+  if(r.ok) updatePricingExample();
+}
+
+function updatePricingExample(){
+  const type=document.getElementById('markupType')?.value||'percentage';
+  const val=parseFloat(document.getElementById('markupValue')?.value||10);
+  const fee=parseFloat(document.getElementById('gatewayFeePct')?.value||1.4);
+  const cost=10000;
+  const selling=type==='percentage'?cost*(1+val/100):cost+val;
+  const gross=selling-cost;
+  const gwFee=selling*fee/100;
+  const net=gross-gwFee;
+  const el=document.getElementById('pricingExample');
+  if(el) el.innerHTML=`
+    Provider/API cost: <strong>₦${cost.toLocaleString()}</strong><br>
+    Markup: <strong>${type==='percentage'?val+'%':'₦'+val}</strong><br>
+    Customer selling price: <strong style="color:#2563eb">₦${selling.toLocaleString()}</strong><br>
+    Gross profit: <strong style="color:#059669">₦${gross.toLocaleString()}</strong><br>
+    Gateway fee (${fee}%): <strong style="color:#dc2626">-₦${gwFee.toFixed(0)}</strong><br>
+    Net profit: <strong style="color:#065f46;font-size:1rem">₦${net.toFixed(0)}</strong>`;
+}
+
+// ──────────────── 2FA ────────────────
+async function setup2FA(){
+  const d=await fetch('/admin/api/settings/2fa/setup',{method:'POST',credentials:'include'}).then(r=>r.json());
+  document.getElementById('twoFaQr').src=d.qr_code;
+  document.getElementById('twoFaSecret').textContent=d.secret;
+  document.getElementById('twoFaStep1').style.display='block';
+  document.getElementById('twoFaStep2').style.display='none';
+  document.getElementById('twoFaModal').classList.add('show');
+}
+
+async function verify2FA(){
+  const code=document.getElementById('twoFaCode').value.trim();
+  const r=await fetch('/admin/api/settings/2fa/verify',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+  const d=await r.json();
+  if(!r.ok){showAlert('twoFaModalAlert','error',d.error||'Invalid code.');return;}
+  document.getElementById('backupCodes').innerHTML=d.backup_codes.map(c=>`<div class="backup-code">${c}</div>`).join('');
+  document.getElementById('twoFaStep1').style.display='none';
+  document.getElementById('twoFaStep2').style.display='block';
+  if(adminData) adminData.totp_enabled=true;
+  document.getElementById('twoFaEnabled').style.display='block';
+  document.getElementById('twoFaDisabled').style.display='none';
+}
+
+async function disable2FA(){
+  const pw=document.getElementById('disable2faPassword').value;
+  const r=await fetch('/admin/api/settings/2fa/disable',{method:'POST',credentials:'include',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+  const d=await r.json();
+  if(!r.ok){showAlert('twoFaAlert','error',d.error||'Failed.');return;}
+  if(adminData) adminData.totp_enabled=false;
+  document.getElementById('twoFaEnabled').style.display='none';
+  document.getElementById('twoFaDisabled').style.display='block';
+  showAlert('twoFaAlert','success','2FA disabled.');
+}
+
+// ──────────────── API Settings ────────────────
+let apiTested=false;
+async function testApi(){
+  const el=document.getElementById('apiTestResult');
+  el.className='alert alert-info';el.style.display='block';el.textContent='Testing API connection…';
+  const d=await fetch('/admin/api/settings/api-test',{credentials:'include'}).then(r=>r.json());
+  if(d.ok){
+    el.className='alert alert-success';
+    el.textContent=`✅ API Connected. Store: ${JSON.stringify(d.account||{})} | Products: ${d.product_count}`;
+  } else {
+    el.className='alert alert-error';
+    el.textContent='❌ API Error: '+(d.error||'Connection failed.');
+  }
+}
+async function testApiStatus(){if(!apiTested){apiTested=true;await testApi();}}
+
+// ──────────────── Utility ────────────────
+function showAlert(id,type,msg){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.className='alert alert-'+type;el.textContent=msg;el.style.display='block';
+  setTimeout(()=>{el.style.display='none';},5000);
+}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+function renderPagination(containerId,pages,current,fnName){
+  const el=document.getElementById(containerId);
+  if(!el||pages<=1){if(el)el.innerHTML='';return;}
+  let html='';
+  html+=`<button onclick="${fnName}(${current-1})" ${current<=1?'disabled':''}>‹ Prev</button>`;
+  for(let i=1;i<=pages;i++){
+    if(i===1||i===pages||Math.abs(i-current)<=2)
+      html+=`<button class="${i===current?'active':''}" onclick="${fnName}(${i})">${i}</button>`;
+    else if(Math.abs(i-current)===3) html+='<button disabled>…</button>';
+  }
+  html+=`<button onclick="${fnName}(${current+1})" ${current>=pages?'disabled':''}>Next ›</button>`;
+  el.innerHTML=html;
+}
+
+async function doLogout(){
+  await fetch('/admin/api/logout',{method:'POST',credentials:'include'});
+  window.location.href='/admin/login';
+}
+
+// Pricing example live update
+document.addEventListener('input',e=>{
+  if(['markupType','markupValue','gatewayFeePct'].includes(e.target.id)) updatePricingExample();
+});
+
+// Init
+init();
+</script>
+</body>
+</html>

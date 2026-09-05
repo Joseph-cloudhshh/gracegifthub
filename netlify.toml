@@ -1,0 +1,36 @@
+[build]
+  base = "frontend"
+  publish = "."
+  functions = "../netlify/functions"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"
+
+# Route these exact path patterns straight to the "api" Python function,
+# preserving the original path (Flask's blueprints already expect the
+# /api, /admin/api, /webhooks prefixes, so no rewriting is needed).
+[functions."api"]
+  path = ["/api/*", "/admin/api/*", "/webhooks/*"]
+
+# Pretty URLs for the admin HTML pages (plain static files, no server needed
+# — the pages themselves call /admin/api/me client-side to check auth).
+[[redirects]]
+  from = "/admin"
+  to = "/admin/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/"
+  to = "/admin/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/login"
+  to = "/admin/login.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
