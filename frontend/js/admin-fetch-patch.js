@@ -22,17 +22,19 @@
       url = BACKEND + url;
     }
 
-    return _fetch(url, init).then((res) => {
+    return _fetch(url, init).then(async (res) => {
       // Admin login endpoint: stash the token from the JSON body so we can
-      // send it as a header on every later cross-origin request.
+      // send it as a header on every later cross-origin request. This is
+      // AWAITED (not fire-and-forget) so the token is guaranteed saved
+      // before doLogin()'s `await fetch(...)` resolves and the page
+      // navigates to the dashboard — otherwise the navigation could win
+      // the race and the dashboard would load with no token yet saved,
+      // bouncing straight back to the login page.
       if (isAdmin && typeof input === "string" && input.indexOf("/admin/api/login") === 0) {
-        res
-          .clone()
-          .json()
-          .then((data) => {
-            if (data && data.token) localStorage.setItem("ggh_admin_token", data.token);
-          })
-          .catch(() => {});
+        try {
+          const data = await res.clone().json();
+          if (data && data.token) localStorage.setItem("ggh_admin_token", data.token);
+        } catch (e) {}
       }
       if (isAdmin && typeof input === "string" && input.indexOf("/admin/api/logout") === 0) {
         localStorage.removeItem("ggh_admin_token");
