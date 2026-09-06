@@ -8,9 +8,24 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key")
 
-    # SQLite — absolute path so WSGI/Passenger can always find it
-    DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "gracegifthub.db"))
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_PATH}"
+    # Database: uses DATABASE_URL (e.g. your Supabase Postgres connection
+    # string) when set — required so PythonAnywhere and any other backend
+    # host share the SAME data as everything else. Falls back to a local
+    # SQLite file only when DATABASE_URL isn't set (e.g. quick local testing).
+    _db_url = os.getenv("DATABASE_URL")
+    if _db_url:
+        if _db_url.startswith("postgres://"):
+            _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+        SQLALCHEMY_DATABASE_URI = _db_url
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            "pool_pre_ping": True,
+            "pool_size": 5,
+            "max_overflow": 2,
+            "pool_recycle": 300,
+        }
+    else:
+        DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "gracegifthub.db"))
+        SQLALCHEMY_DATABASE_URI = f"sqlite:///{DB_PATH}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # PayScribe Payment Gateway — secret key NEVER exposed to frontend

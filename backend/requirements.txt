@@ -8,3 +8,4 @@ Werkzeug==3.0.3
 pyotp==2.9.0
 qrcode[pil]==7.4.2
 Pillow==10.3.0
+psycopg2-binary==2.9.9

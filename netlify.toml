@@ -1,16 +1,22 @@
 [build]
-  base = "frontend"
-  publish = "."
-  functions = "../netlify/functions"
+  publish = "frontend"
 
 [build.environment]
   PYTHON_VERSION = "3.11"
+
+[functions]
+  directory = "netlify/functions"
 
 # Route these exact path patterns straight to the "api" Python function,
 # preserving the original path (Flask's blueprints already expect the
 # /api, /admin/api, /webhooks prefixes, so no rewriting is needed).
 [functions."api"]
   path = ["/api/*", "/admin/api/*", "/webhooks/*"]
+
+# Temporary diagnostic function — confirms Python functions bundle at all
+# on this account, independent of the real app's dependencies/size.
+[functions."hello"]
+  path = ["/hello-test"]
 
 # Pretty URLs for the admin HTML pages (plain static files, no server needed
 # — the pages themselves call /admin/api/me client-side to check auth).
